@@ -73,6 +73,12 @@ export default function ChatScreen() {
       const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
       const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
+      const personalityTraits = coach.personality_traits.length > 0
+        ? `\n\nYour personality traits: ${coach.personality_traits.join(', ')}.`
+        : '';
+
+      const fullCoachPrompt = `You are ${coach.name}, a ${coach.title}. ${coach.description}${personalityTraits}\n\n${coach.system_prompt}\n\nIMPORTANT: You must always respond as ${coach.name}, not as Claude or any other AI. Stay in character and embody the personality and expertise described above.`;
+
       const response = await fetch(
         `${supabaseUrl}/functions/v1/generate-coach-response`,
         {
@@ -84,7 +90,7 @@ export default function ChatScreen() {
           body: JSON.stringify({
             replicaId: coach.tavus_replica_id,
             userMessage: 'Start coaching session',
-            coachPrompt: coach.system_prompt,
+            coachPrompt: fullCoachPrompt,
             sessionType: 'video',
           }),
         }

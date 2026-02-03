@@ -213,6 +213,18 @@ export default function CoachDetailScreen() {
             <Star size={16} color="#fbbf24" />
             <Text style={styles.statsText}>{coach.use_count} sessions</Text>
           </View>
+          <View style={styles.availableSessionsContainer}>
+            <View style={styles.sessionBadge}>
+              <MessageCircle size={14} color="#10b981" />
+              <Text style={styles.sessionBadgeText}>Text Chat</Text>
+            </View>
+            {coach.tavus_replica_id && (
+              <View style={styles.sessionBadge}>
+                <Video size={14} color="#10b981" />
+                <Text style={styles.sessionBadgeText}>Video Sessions</Text>
+              </View>
+            )}
+          </View>
         </View>
 
         <View style={styles.section}>
@@ -414,10 +426,32 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    marginBottom: 12,
   },
   statsText: {
     fontSize: 14,
     color: '#666',
+    fontWeight: '600',
+  },
+  availableSessionsContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 4,
+  },
+  sessionBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#f0fdf4',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#bbf7d0',
+  },
+  sessionBadgeText: {
+    fontSize: 12,
+    color: '#166534',
     fontWeight: '600',
   },
   section: {

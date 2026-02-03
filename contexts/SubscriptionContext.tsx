@@ -32,13 +32,13 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
   const initializeRevenueCat = async () => {
     if (Platform.OS === 'web') {
       setIsLoading(false);
-      setIsPremium(true);
+      setIsPremium(false);
       return;
     }
 
     try {
       setIsLoading(false);
-      setIsPremium(true);
+      setIsPremium(false);
     } catch (error) {
       console.error('RevenueCat initialization error:', error);
       setIsLoading(false);

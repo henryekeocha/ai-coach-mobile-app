@@ -274,7 +274,7 @@ export default function CreateCoachScreen() {
                 <Text style={styles.label}>Video Persona (Tavus)</Text>
               </View>
               <Text style={styles.fieldHint}>
-                Select a Tavus persona to enable human-in-AI video coaching
+                Select a Tavus persona to enable video coaching sessions. Without a persona, only text chat will be available.
               </Text>
               {loadingPersonas ? (
                 <ActivityIndicator size="small" color="#000" style={{ marginVertical: 16 }} />
