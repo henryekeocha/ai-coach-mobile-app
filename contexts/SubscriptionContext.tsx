@@ -11,8 +11,8 @@ interface SubscriptionContextType {
 const SubscriptionContext = createContext<SubscriptionContextType>({
   isPremium: false,
   isLoading: true,
-  showPaywall: () => {},
-  restorePurchases: async () => {},
+  showPaywall: () => { },
+  restorePurchases: async () => { },
 });
 
 export const useSubscription = () => useContext(SubscriptionContext);
