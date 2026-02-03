@@ -11,13 +11,15 @@ import { WebView } from 'react-native-webview';
 import { router, useLocalSearchParams } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 import { Conversation, Coach } from '@/types/database';
-import { ArrowLeft } from 'lucide-react-native';
+import { ArrowLeft, Crown } from 'lucide-react-native';
 import TextChat from '@/components/TextChat';
 
 export default function ChatScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
+  const { isPremium } = useSubscription();
   const [conversation, setConversation] = useState<Conversation | null>(null);
   const [coach, setCoach] = useState<Coach | null>(null);
   const [loading, setLoading] = useState(true);
@@ -60,6 +62,13 @@ export default function ChatScreen() {
   };
 
   const initializeTavusConversation = async (coach: Coach) => {
+    // Check if user has premium access for video sessions
+    if (!isPremium) {
+      setError('premium_required');
+      setLoading(false);
+      return;
+    }
+
     try {
       const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
       const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
@@ -120,6 +129,48 @@ export default function ChatScreen() {
   }
 
   if (error) {
+    // Show premium paywall for video sessions
+    if (error === 'premium_required') {
+      return (
+        <View style={styles.container}>
+          <View style={styles.header}>
+            <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+              <ArrowLeft size={24} color="#000" />
+            </TouchableOpacity>
+            <View style={styles.headerInfo}>
+              <Text style={styles.headerTitle}>{coach?.name || 'Coach'}</Text>
+              <Text style={styles.headerSubtitle}>{coach?.title || ''}</Text>
+            </View>
+            <View style={styles.placeholder} />
+          </View>
+          <View style={styles.centerContainer}>
+            <View style={styles.premiumPrompt}>
+              <Crown size={48} color="#fbbf24" />
+              <Text style={styles.premiumTitle}>Premium Feature</Text>
+              <Text style={styles.premiumText}>
+                Video coaching sessions are available with Premium.
+                Upgrade now to unlock unlimited video sessions with all coaches.
+              </Text>
+              <TouchableOpacity
+                style={styles.upgradeButton}
+                onPress={() => router.push('/(tabs)/subscription')}
+              >
+                <Crown size={20} color="#fff" />
+                <Text style={styles.upgradeButtonText}>Upgrade to Premium</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.textChatButton}
+                onPress={() => router.back()}
+              >
+                <Text style={styles.textChatButtonText}>Use Text Chat Instead</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      );
+    }
+
+    // Show regular error
     return (
       <View style={styles.container}>
         <View style={styles.header}>
@@ -277,5 +328,48 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  premiumPrompt: {
+    alignItems: 'center',
+    padding: 32,
+    maxWidth: 400,
+  },
+  premiumTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#000',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  premiumText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 24,
+  },
+  upgradeButton: {
+    backgroundColor: '#000',
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+  upgradeButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  textChatButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+  },
+  textChatButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#666',
   },
 });

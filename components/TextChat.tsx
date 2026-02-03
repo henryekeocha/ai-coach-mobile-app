@@ -9,11 +9,14 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
+import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { Message, Conversation, Coach } from '@/types/database';
-import { Send } from 'lucide-react-native';
+import { Send, Crown } from 'lucide-react-native';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 import SessionRecap from './SessionRecap';
 
 interface TextChatProps {
@@ -21,8 +24,11 @@ interface TextChatProps {
   coach: Coach;
 }
 
+const FREE_MESSAGE_LIMIT = 10;
+
 export default function TextChat({ conversation, coach }: TextChatProps) {
   const { user } = useAuth();
+  const { isPremium } = useSubscription();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [loading, setLoading] = useState(true);
@@ -30,6 +36,7 @@ export default function TextChat({ conversation, coach }: TextChatProps) {
   const [showRecap, setShowRecap] = useState(false);
   const [previousSessionId, setPreviousSessionId] = useState<string | null>(null);
   const [recapSummary, setRecapSummary] = useState<string | null>(null);
+  const [userMessageCount, setUserMessageCount] = useState(0);
   const flatListRef = useRef<FlatList>(null);
 
   useEffect(() => {
@@ -77,6 +84,10 @@ export default function TextChat({ conversation, coach }: TextChatProps) {
 
       if (error) throw error;
       setMessages(data || []);
+
+      // Count user messages for free tier limit
+      const userMessages = data?.filter(msg => msg.sender_type === 'user') || [];
+      setUserMessageCount(userMessages.length);
 
       if (data && data.length === 0 && !showRecap) {
         await sendInitialMessage();
@@ -167,6 +178,22 @@ export default function TextChat({ conversation, coach }: TextChatProps) {
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || sending) return;
 
+    // Check message limit for free users
+    if (!isPremium && userMessageCount >= FREE_MESSAGE_LIMIT) {
+      Alert.alert(
+        'Upgrade to Premium',
+        `You've reached the free limit of ${FREE_MESSAGE_LIMIT} messages per conversation. Upgrade to Premium for unlimited messaging!`,
+        [
+          { text: 'Maybe Later', style: 'cancel' },
+          {
+            text: 'Upgrade Now',
+            onPress: () => router.push('/(tabs)/subscription')
+          }
+        ]
+      );
+      return;
+    }
+
     const messageText = inputMessage.trim();
     setInputMessage('');
     setSending(true);
@@ -187,6 +214,7 @@ export default function TextChat({ conversation, coach }: TextChatProps) {
 
       if (userMessageData) {
         setMessages((prev) => [...prev, userMessageData as Message]);
+        setUserMessageCount(prev => prev + 1);
       }
 
       await supabase
@@ -304,27 +332,42 @@ export default function TextChat({ conversation, coach }: TextChatProps) {
         onLayout={() => flatListRef.current?.scrollToEnd()}
       />
 
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Type a message..."
-          value={inputMessage}
-          onChangeText={setInputMessage}
-          multiline
-          maxLength={1000}
-          editable={!sending}
-        />
-        <TouchableOpacity
-          style={[styles.sendButton, (!inputMessage.trim() || sending) && styles.sendButtonDisabled]}
-          onPress={handleSendMessage}
-          disabled={!inputMessage.trim() || sending}
-        >
-          {sending ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <Send size={20} color="#fff" />
-          )}
-        </TouchableOpacity>
+      <View style={styles.inputWrapper}>
+        {!isPremium && userMessageCount >= FREE_MESSAGE_LIMIT * 0.8 && (
+          <TouchableOpacity
+            style={styles.limitWarning}
+            onPress={() => router.push('/(tabs)/subscription')}
+          >
+            <Crown size={16} color="#fbbf24" />
+            <Text style={styles.limitWarningText}>
+              {userMessageCount >= FREE_MESSAGE_LIMIT
+                ? 'Message limit reached - Upgrade for unlimited'
+                : `${FREE_MESSAGE_LIMIT - userMessageCount} free messages left`}
+            </Text>
+          </TouchableOpacity>
+        )}
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder="Type a message..."
+            value={inputMessage}
+            onChangeText={setInputMessage}
+            multiline
+            maxLength={1000}
+            editable={!sending}
+          />
+          <TouchableOpacity
+            style={[styles.sendButton, (!inputMessage.trim() || sending) && styles.sendButtonDisabled]}
+            onPress={handleSendMessage}
+            disabled={!inputMessage.trim() || sending}
+          >
+            {sending ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Send size={20} color="#fff" />
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
     </KeyboardAvoidingView>
   );
@@ -375,11 +418,29 @@ const styles = StyleSheet.create({
   coachMessageText: {
     color: '#000',
   },
+  inputWrapper: {
+    borderTopWidth: 1,
+    borderTopColor: '#e5e5e5',
+  },
+  limitWarning: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fffbeb',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#fef3c7',
+  },
+  limitWarningText: {
+    fontSize: 13,
+    color: '#92400e',
+    fontWeight: '600',
+    flex: 1,
+  },
   inputContainer: {
     flexDirection: 'row',
     padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#e5e5e5',
     alignItems: 'flex-end',
   },
   input: {
