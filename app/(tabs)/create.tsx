@@ -15,7 +15,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Coach } from '@/types/database';
 import { createTavusClient, TavusPersona } from '@/services/tavus';
-import { X, Video, ChevronRight } from 'lucide-react-native';
+import { X, Video, ChevronRight, Trash2 } from 'lucide-react-native';
 import { getImageSource } from '@/lib/images';
 
 export default function CreateCoachScreen() {
@@ -101,6 +101,38 @@ export default function CreateCoachScreen() {
     setTraits(traits.filter((t) => t !== trait));
   };
 
+  const handleDelete = async (coachId: string, coachName: string) => {
+    Alert.alert(
+      'Delete Coach',
+      `Are you sure you want to delete "${coachName}"? This action cannot be undone.`,
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const { error } = await supabase
+                .from('coaches')
+                .delete()
+                .eq('id', coachId);
+
+              if (error) throw error;
+
+              loadPrivateCoaches();
+              Alert.alert('Success', 'Coach deleted successfully');
+            } catch (error: any) {
+              Alert.alert('Error', error.message);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const handleCreate = async () => {
     if (!name || !title || !description || !systemPrompt) {
       Alert.alert('Missing Fields', 'Please fill in all required fields');
@@ -182,26 +214,33 @@ export default function CreateCoachScreen() {
               Coaches only you can see and use
             </Text>
             {privateCoaches.map((coach) => (
-              <TouchableOpacity
-                key={coach.id}
-                style={styles.privateCoachCard}
-                onPress={() => router.push(`/coach/${coach.id}`)}
-              >
-                {getImageSource(coach.avatar_url) ? (
-                  <Image source={getImageSource(coach.avatar_url)!} style={styles.coachAvatar} />
-                ) : (
-                  <View style={styles.coachAvatar}>
-                    <Text style={styles.coachAvatarText}>
-                      {coach.name.charAt(0).toUpperCase()}
-                    </Text>
+              <View key={coach.id} style={styles.privateCoachCard}>
+                <TouchableOpacity
+                  style={styles.coachCardTouchable}
+                  onPress={() => router.push(`/coach/${coach.id}`)}
+                >
+                  {getImageSource(coach.avatar_url) ? (
+                    <Image source={getImageSource(coach.avatar_url)!} style={styles.coachAvatar} />
+                  ) : (
+                    <View style={styles.coachAvatar}>
+                      <Text style={styles.coachAvatarText}>
+                        {coach.name.charAt(0).toUpperCase()}
+                      </Text>
+                    </View>
+                  )}
+                  <View style={styles.coachCardInfo}>
+                    <Text style={styles.coachCardName}>{coach.name}</Text>
+                    <Text style={styles.coachCardTitle}>{coach.title}</Text>
                   </View>
-                )}
-                <View style={styles.coachCardInfo}>
-                  <Text style={styles.coachCardName}>{coach.name}</Text>
-                  <Text style={styles.coachCardTitle}>{coach.title}</Text>
-                </View>
-                <ChevronRight size={20} color="#999" />
-              </TouchableOpacity>
+                  <ChevronRight size={20} color="#999" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.deleteButton}
+                  onPress={() => handleDelete(coach.id, coach.name)}
+                >
+                  <Trash2 size={20} color="#ef4444" />
+                </TouchableOpacity>
+              </View>
             ))}
           </View>
         )}
@@ -673,12 +712,25 @@ const styles = StyleSheet.create({
   privateCoachCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
     backgroundColor: '#f9f9f9',
     borderRadius: 12,
     marginBottom: 12,
     borderWidth: 1,
     borderColor: '#e5e5e5',
+    overflow: 'hidden',
+  },
+  coachCardTouchable: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+  },
+  deleteButton: {
+    padding: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderLeftWidth: 1,
+    borderLeftColor: '#e5e5e5',
   },
   coachAvatar: {
     width: 48,
