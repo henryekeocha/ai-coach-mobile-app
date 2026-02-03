@@ -4,11 +4,18 @@ import { StatusBar } from 'expo-status-bar';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { SubscriptionProvider } from '@/contexts/SubscriptionContext';
+import { initializeRevenueCat } from '@/services/revenuecat';
 
 function RootLayoutNav() {
-  const { session, loading } = useAuth();
+  const { session, user, loading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
+
+  useEffect(() => {
+    if (user) {
+      initializeRevenueCat(user.id);
+    }
+  }, [user]);
 
   useEffect(() => {
     if (loading) return;
