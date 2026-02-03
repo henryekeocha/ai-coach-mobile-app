@@ -4,7 +4,7 @@ const PEXELS_AVATARS: Record<string, string> = {
   'jordan-taylor': 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg',
 };
 
-export const getImageSource = (avatarUrl: string | null) => {
+export const getImageSource = (avatarUrl: string | null | undefined) => {
   if (!avatarUrl) return null;
 
   if (avatarUrl.startsWith('http://') || avatarUrl.startsWith('https://')) {
