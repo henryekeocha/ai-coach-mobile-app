@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
-import { getOfferings, purchasePackage } from '@/services/revenuecat';
-import { PurchasesOfferings } from 'react-native-purchases';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Platform } from 'react-native';
+import { getOfferings, purchasePackage, PurchasesOfferings } from '@/services/revenuecat';
 
 export default function SubscriptionScreen() {
     const [offerings, setOfferings] = useState<PurchasesOfferings | null>(null);
@@ -37,6 +36,26 @@ export default function SubscriptionScreen() {
     }
 
     const currentOffering = offerings?.current;
+
+    if (Platform.OS === 'web') {
+        return (
+            <View style={styles.container}>
+                <Text style={styles.title}>Upgrade to Premium</Text>
+                <Text style={styles.webNotice}>
+                    In-app purchases are only available on iOS and Android devices.
+                    To test subscriptions, export your project and run it on a native device.
+                </Text>
+                <View style={styles.package}>
+                    <Text style={styles.packageTitle}>Premium Monthly</Text>
+                    <Text style={styles.packagePrice}>$9.99/month</Text>
+                </View>
+                <View style={styles.package}>
+                    <Text style={styles.packageTitle}>Premium Yearly</Text>
+                    <Text style={styles.packagePrice}>$99.99/year</Text>
+                </View>
+            </View>
+        );
+    }
 
     return (
         <View style={styles.container}>
@@ -87,5 +106,13 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#666',
         fontWeight: '500',
+    },
+    webNotice: {
+        fontSize: 14,
+        color: '#666',
+        textAlign: 'center',
+        marginBottom: 24,
+        paddingHorizontal: 20,
+        lineHeight: 20,
     },
 });
