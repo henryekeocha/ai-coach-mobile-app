@@ -60,12 +60,12 @@ export default function TextChat({ conversation, coach }: TextChatProps) {
 
       if (prevSession && conversation.session_number > 1) {
         setPreviousSessionId(prevSession.id);
-        const { data: msgCount } = await supabase
+        const { count } = await supabase
           .from('messages')
           .select('id', { count: 'exact', head: true })
           .eq('conversation_id', conversation.id);
 
-        if (!msgCount || msgCount === 0) {
+        if (count === 0 || count === null) {
           setShowRecap(true);
         }
       }
