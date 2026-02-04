@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
   Image,
 } from 'react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { Coach } from '@/types/database';
 import { Search, Star } from 'lucide-react-native';
@@ -24,6 +24,12 @@ export default function DiscoverScreen() {
   useEffect(() => {
     loadCoaches();
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadCoaches();
+    }, [])
+  );
 
   const loadCoaches = async (isRefreshing = false) => {
     if (isRefreshing) {
