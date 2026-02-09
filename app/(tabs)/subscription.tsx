@@ -63,6 +63,7 @@ export default function SubscriptionScreen() {
   const [selectedTier, setSelectedTier] = useState<string>('premium_yearly');
   const [loading, setLoading] = useState(false);
   const [restoring, setRestoring] = useState(false);
+  const isDemoMode = process.env.EXPO_PUBLIC_DEMO_MODE === 'true';
 
   const handlePurchase = async () => {
     setLoading(true);
@@ -130,6 +131,11 @@ export default function SubscriptionScreen() {
               <Crown size={48} color="#fbbf24" />
             </View>
             <Text style={styles.premiumTitle}>You're a Premium Member</Text>
+            {isDemoMode && (
+              <View style={styles.demoBadge}>
+                <Text style={styles.demoBadgeText}>DEMO MODE ACTIVE</Text>
+              </View>
+            )}
             <Text style={styles.premiumDescription}>
               Enjoy unlimited access to all coaches and features
             </Text>
@@ -477,5 +483,19 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  demoBadge: {
+    backgroundColor: '#0ea5e9',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  demoBadgeText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
 });

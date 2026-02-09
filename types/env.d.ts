@@ -6,6 +6,7 @@ declare global {
       EXPO_PUBLIC_TAVUS_API_KEY: string;
       EXPO_PUBLIC_REVENUECAT_API_KEY_IOS: string;
       EXPO_PUBLIC_REVENUECAT_API_KEY_ANDROID: string;
+      EXPO_PUBLIC_DEMO_MODE: string;
     }
   }
 }

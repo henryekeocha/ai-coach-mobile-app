@@ -30,15 +30,17 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
   }, []);
 
   const initializeRevenueCat = async () => {
+    const isDemoMode = process.env.EXPO_PUBLIC_DEMO_MODE === 'true';
+
     if (Platform.OS === 'web') {
       setIsLoading(false);
-      setIsPremium(false);
+      setIsPremium(isDemoMode);
       return;
     }
 
     try {
       setIsLoading(false);
-      setIsPremium(false);
+      setIsPremium(isDemoMode);
     } catch (error) {
       console.error('RevenueCat initialization error:', error);
       setIsLoading(false);
