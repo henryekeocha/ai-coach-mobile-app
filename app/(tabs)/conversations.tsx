@@ -14,6 +14,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Conversation, Coach } from '@/types/database';
 import { MessageCircle, Plus, X, Video } from 'lucide-react-native';
+import { getImageSource } from '@/lib/images';
 import SessionRecap from '@/components/SessionRecap';
 
 interface CoachWithSessions {
@@ -237,8 +238,8 @@ export default function ConversationsScreen() {
           style={styles.coachHeader}
           onPress={() => toggleCoachExpansion(item.coach.id)}
         >
-          {item.coach.avatar_url ? (
-            <Image source={{ uri: item.coach.avatar_url }} style={styles.avatar} />
+          {item.coach.avatar_url && getImageSource(item.coach.avatar_url) ? (
+            <Image source={getImageSource(item.coach.avatar_url)} style={styles.avatar} />
           ) : (
             <View style={styles.avatar}>
               <Text style={styles.avatarText}>
