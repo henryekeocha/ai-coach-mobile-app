@@ -5,7 +5,6 @@ const PEXELS_AVATARS: Record<string, string> = {
 
 const LOCAL_ASSETS: Record<string, any> = {
   'maya-chen-new': require('../assets/images/maya-chen.png'),
-  'jordan-taylor-new': require('../assets/images/jordan-taylor.png'),
   'alex-rivera-new': require('../assets/images/alex-rivera.png'),
 };
 
